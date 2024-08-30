@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hera</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="estilos.css">
+    <link rel="icon" href="favicon-32x32.png" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <img class="Imagen_hera" src="hera.jpg" alt="Hera">
+        <nav>
+            <div class="dorado"></div>
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="menu.html">Menú</a></li>
+                <li><a href="index.html#reservas">Reservas</a></li>
+                <li><a href="index.html#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="reservas">
+        <h2 class="reservass">Reservas</h2>
+        <form id="reserva-form">
+            <label class="formatos"  for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+
+            <label class="formatos" for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label class="formatos" for="fecha">Fecha:</label>
+            <input type="date" id="fecha" name="fecha" required>
+
+            <label class="formatos" for="personas">Número de Personas:</label>
+            <input type="number" id="personas" name="personas" required>
+
+            <button type="submit">Reservar</button>
+        </form>
+        <div class="mensaje-confirmacion"></div>
+    </section>
+
+    <section class="contactos" id="contacto"> <h1>contacto</h1>
+        <p class="email">Email: Hera@gmail.com</p>
+        <p class="tel">Telefono: 3208134717</p>
+
+    </section>
+
+
+
+
+    <footer>
+        <p class="year">&copy; 2024 Discoteca Hera. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: black;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+
+header {
+    color: #fff;
+    padding: 10px 0;
+    background-color: black;
+}
+
+.Imagen_hera {
+    width: 300px;
+}
+.reservass{
+
+    color: white;
+    font-family: 'Times New Roman', Times, serif;
+
+
+}
+.formatos{
+
+    color: white;
+
+
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: #e6dddd;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.dorado {
+    background-color: gold;
+    width: 5000px;
+    height: 4px;
+}
+
+nav ul li a:hover,
+nav ul li a.active {
+    text-decoration: underline;
+}
+
+#content {
+    margin: 20px;
+}
+
+#menu {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #000000;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.menu-container {
+    padding: 20px;
+    background-color: #333;
+    color: white;
+    max-width: 800px;
+    margin: auto;
+    border-radius: 10px;
+}
+
+.menu-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.text {
+    color: white;
+}
+
+.beer-menu {
+    list-style-type: none;
+    padding: 0;
+}
+
+.beer-item {
+    border-bottom: 1px solid #555;
+    padding: 10px 0;
+}
+
+.beer-item:last-child {
+    border-bottom: none;
+}
+
+.beer-item h3 {
+    margin: 0;
+}
+
+.beer-item p {
+    margin: 5px 0;
+}
+
+.price {
+    color: #f0f0f0;
+    font-weight: bold;
+    float: right;
+}
+
+.reservas-blancas {
+    color: white;
+}
+
+.contactos-blancos {
+    color: white;
+}
+.contactos{
+
+    color: white;
+    font-size: px;
+    
+
+}
+
+.year{
+    color: white;
+
+
+}
+.email{
+
+    color: white;
+
+}
+.tel{
+
+    color: white;
+
+}
+.mensaje-confirmacion{
+
+    color: white;
+
+}
+.foot-contact{
+
+    font-size: 30px;
+    font-family: 'Times New Roman', Times, serif;
+
+
+}
