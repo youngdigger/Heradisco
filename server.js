@@ -19,14 +19,17 @@ const mysqlConnection = mysql.createConnection({
 
 mysqlConnection.connect((err) => {
   if (err) {
-    console.log('MySQL connection failed:', err);
+    console.error('MySQL connection failed:', err);
   } else {
     console.log('Connected to MySQL Database');
   }
 });
 
+// Verifica la ruta de la base de datos SQLite
+console.log('SQLite DB Path:', process.env.SQLITE_DB_PATH);
+
 // Conexión a SQLite
-const sqliteConnection = new sqlite3.Database('./path_to_your_db.sqlite', (err) => {
+const sqliteConnection = new sqlite3.Database(process.env.SQLITE_DB_PATH, (err) => {
   if (err) {
     console.error('SQLite connection failed:', err);
   } else {
@@ -37,14 +40,15 @@ const sqliteConnection = new sqlite3.Database('./path_to_your_db.sqlite', (err) 
 // Middlewares
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
-  secret: 'your_secret_key',
+  secret: process.env.SESSION_SECRET || 'your_secret_key',
   resave: false,
   saveUninitialized: true
 }));
 
-// Rutas
+// Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Rutas
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -53,7 +57,9 @@ app.get('/', (req, res) => {
 app.get('/data', (req, res) => {
   sqliteConnection.all('SELECT * FROM your_table', [], (err, rows) => {
     if (err) {
-      throw err;
+      console.error('Error fetching data from SQLite:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
     }
     res.json(rows);
   });
@@ -63,12 +69,20 @@ app.get('/data', (req, res) => {
 app.get('/data-mysql', (req, res) => {
   mysqlConnection.query('SELECT * FROM your_table', (err, results) => {
     if (err) {
-      throw err;
+      console.error('Error fetching data from MySQL:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
     }
     res.json(results);
   });
 });
 
+// Manejo de rutas no definidas
+app.use((req, res) => {
+  res.status(404).send('Page Not Found');
+});
+
+// Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
