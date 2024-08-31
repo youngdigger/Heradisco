@@ -1,101 +1,67 @@
 const express = require('express');
-const path = require('path');
-const mysql = require('mysql2');
-const sqlite3 = require('sqlite3').verbose();
-const bodyParser = require('body-parser');
-const session = require('express-session');
-require('dotenv').config();
+const mysql = require('mysql2/promise');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-// Conexión a MySQL (usando la URL de entorno)
-const mysqlConnection = mysql.createConnection(process.env.CLEARDB_DATABASE_URL);
-
-mysqlConnection.connect((err) => {
-  if (err) {
-    console.error('MySQL connection failed:', err);
-  } else {
-    console.log('Connected to MySQL Database');
+// Configuración de la conexión a MySQL (ejemplo con async/await)
+async function connectToMySQL() {
+  try {
+    const connection = await mysql.createConnection(process.env.CLEARDB_DATABASE_URL);
+    console.log('Connected to MySQL');
+    return connection;
+  } catch (error) {
+    console.error('Error connecting to MySQL:', error);
+    process.exit(1);
   }
-});
+}
 
-// Verifica la ruta de la base de datos SQLite
-console.log('SQLite DB Path:', process.env.SQLITE_DB_PATH);
-
-// Conexión a SQLite
-const sqliteConnection = new sqlite3.Database(process.env.SQLITE_DB_PATH, (err) => {
-  if (err) {
-    console.error('SQLite connection failed:', err);
-  } else {
-    console.log('Connected to SQLite Database');
+// Función para ejecutar una consulta SQL
+async function executeQuery(connection, sql, params) {
+  try {
+    const [rows] = await connection.execute(sql, params);
+    return rows;
+  } catch (error) {
+    console.error('Error executing query:', error);
+    throw error;
   }
-});
+}
 
-// Middlewares
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your_secret_key',
-  resave: false,
-  saveUninitialized: true
-}));
-
-// Servir archivos estáticos
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Rutas
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Ejemplo de consulta a SQLite
-app.get('/data', (req, res) => {
-  sqliteConnection.all('SELECT * FROM your_table', [], (err, rows) => {
-    if (err) {
-      console.error('Error fetching data from SQLite:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-      return;
-    }
-    res.json(rows);
-  });
-});
-
-// Ejemplo de consulta a MySQL
-app.get('/data-mysql', (req, res) => {
-  mysqlConnection.query('SELECT * FROM your_table', (err, results) => {
-    if (err) {
-      console.error('Error fetching data from MySQL:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-      return;
-    }
+// Ruta para obtener datos de MySQL
+app.get('/data-mysql', async (req, res) => {
+  const connection = await connectToMySQL();
+  try {
+    const [results] = await connection.execute('SELECT * FROM your_table');
     res.json(results);
-  });
+  } catch (error) {
+    console.error('Error fetching data from MySQL:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    connection.release();
+  }
 });
 
-// Manejo de rutas no definidas
-app.use((req, res) => {
-  res.status(404).send('Page Not Found');
-});
-
-// Iniciar el servidor
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-require('dotenv').config();
-
+// Resto de tu código...
 const mysql = require('mysql2');
 
-const connection = mysql.createConnection({
-  host: process.env.localhost,
-  user: process.env.root,
-  password: process.env.admin,
-  database: process.env.HerAsDisco
+// Datos de conexión (reemplázalos con tus propios datos)
+const pool = mysql.createPool({
+  host:  us-cluster-east-o01.k8s.cleardb.net
+  ,
+  user: bfac6564b0a035,
+  password: admin
+  ,
+  database: heroku 
 });
 
-connection.connect((err) => {
+// Ejecutar una consulta
+pool.query('SELECT * FROM usuarios', (err, results) => {
   if (err) {
-    console.error('Error al conectar a la base de datos:', err.stack);
-    return;
+    console.error(err);
+  } else {
+    console.log(results); // Procesar los resultados
   }
-  console.log('Conectado a la base de datos MySQL como id ' + connection.threadId);
 });
+
+// Cerrar la conexión cuando ya no sea necesaria
+pool.end();
