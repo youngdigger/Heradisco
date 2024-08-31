@@ -81,3 +81,21 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+require('dotenv').config();
+
+const mysql = require('mysql2');
+
+const connection = mysql.createConnection({
+  host: process.env.localhost,
+  user: process.env.root,
+  password: process.env.admin,
+  database: process.env.HerAsDisco
+});
+
+connection.connect((err) => {
+  if (err) {
+    console.error('Error al conectar a la base de datos:', err.stack);
+    return;
+  }
+  console.log('Conectado a la base de datos MySQL como id ' + connection.threadId);
+});
