@@ -1,52 +1,52 @@
 const express = require('express');
-const { Pool } = require('pg');
-require('dotenv').config(); // Cargar variables de entorno
+const path = require('path');
+const { exec } = require('child_process');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-// Configuración de la conexión a PostgreSQL
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-});
+// Configura las variables de entorno manualmente
+const PORT = 3000;
 
-// Middleware para manejar JSON
 app.use(express.json());
 
-// Función para ejecutar una consulta SQL
-async function executeQuery(sql, params) {
-  try {
-    const client = await pool.connect();
-    const res = await client.query(sql, params);
-    client.release(); // Liberamos el cliente después de usarlo
-    return res.rows;
-  } catch (error) {
-    console.error('Error executing query:', error);
-    throw error;
-  }
-}
+// Ruta para manejar reservas
+app.post('/reservar', (req, res) => {
+    const { nombre, email, fecha, personas } = req.body;
 
-// Ruta para obtener datos de PostgreSQL
-app.post('/api/reservas', async (req, res) => {
-  const { nombre, email, fecha, personas } = req.body;
-  try {
-    // Inserta la reserva en la base de datos
-    await executeQuery(
-      'INSERT INTO reservas (nombre, email, fecha, personas) VALUES ($1, $2, $3, $4)',
-      [nombre, email, fecha, personas]
-    );
-    res.status(201).json({ message: 'Reserva creada con éxito' });
-  } catch (error) {
-    console.error('Error creating reservation:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+    if (!nombre || !email || !fecha || !personas) {
+        return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+
+    exec(`php "${path.join(__dirname, 'reservar.php')}" "${nombre}" "${email}" "${fecha}" "${personas}"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error('Error ejecutando PHP:', error);
+            console.error('Error stderr:', stderr);
+            return res.status(500).json({ error: 'Error al procesar la reserva' });
+        }
+        if (stderr) {
+            console.error('Error del PHP:', stderr);
+            return res.status(500).json({ error: 'Error al procesar la reserva' });
+        }
+        try {
+            const result = JSON.parse(stdout);
+            if (result.error) {
+                return res.status(400).json({ error: result.error });
+            }
+            res.json(result);
+        } catch (e) {
+            console.error('Error al analizar la respuesta de PHP:', e);
+            res.status(500).json({ error: 'Error al procesar la reserva' });
+        }
+    });
 });
 
-// Iniciar el servidor
-app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
+// Configura la carpeta pública para archivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
