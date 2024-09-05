@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const reservaForm = document.getElementById('reserva-form');
-    const mensajeConfirmacion = document.getElementById('mensaje-confirmacion');
+    const mensajeConfirmacion = document.querySelector('.mensaje-confirmacion');
 
     reservaForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -20,51 +20,17 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             mensajeConfirmacion.innerHTML = `
-              <h2 style="color: white;">Reserva Realizada</h2>
-        <p style="color: white;">¡Gracias por tu reserva! Tu solicitud ha sido recibida correctamente.</p>
-      
+                <h2>Reserva Realizada</h2>
+                <p>¡Gracias por tu reserva! Tu solicitud ha sido recibida correctamente.</p>
             `;
             reservaForm.reset(); 
         })
         .catch(error => {
             console.error('Error:', error);
-            document.getElementById('reservaForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-            
-                const nombre = document.getElementById('nombre').value;
-                const email = document.getElementById('email').value;
-            
-                fetch('/reserva', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ nombre, email })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    mensajeConfirmacion.innerHTML = `
-                        <h2>Reserva Realizada</h2>
-                        <p>¡Gracias por tu reserva! Tu solicitud ha sido recibida correctamente.</p>
-              
-                    `;
-                    reservaForm.reset();
-                })
-             
-                .catch(error => console.error('Error:', error));
-            
-            
-                transporter.sendMail(mailOptions, (error, info) => {
-                    if (error) {
-                        console.error('Error al enviar el correo:', error); // Agrega este log
-                        return res.status(500).json({ error: 'Error al enviar el correo' });
-                    }
-                    console.log('Correo enviado:', info.response); // Log para el éxito
-                    res.status(201).json({ id: this.lastID, message: 'Reserva creada y correo enviado con éxito' });
-                });
-                
-            });
-            
+            mensajeConfirmacion.innerHTML = `
+                <h2>Error</h2>
+                <p>Hubo un problema al realizar la reserva. Inténtalo de nuevo más tarde.</p>
+            `;
         });
     });
 });

@@ -1,67 +1,52 @@
 const express = require('express');
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
+require('dotenv').config(); // Cargar variables de entorno
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración de la conexión a MySQL (ejemplo con async/await)
-async function connectToMySQL() {
-  try {
-    const connection = await mysql.createConnection(process.env.CLEARDB_DATABASE_URL);
-    console.log('Connected to MySQL');
-    return connection;
-  } catch (error) {
-    console.error('Error connecting to MySQL:', error);
-    process.exit(1);
-  }
-}
+// Configuración de la conexión a PostgreSQL
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
+
+// Middleware para manejar JSON
+app.use(express.json());
 
 // Función para ejecutar una consulta SQL
-async function executeQuery(connection, sql, params) {
+async function executeQuery(sql, params) {
   try {
-    const [rows] = await connection.execute(sql, params);
-    return rows;
+    const client = await pool.connect();
+    const res = await client.query(sql, params);
+    client.release(); // Liberamos el cliente después de usarlo
+    return res.rows;
   } catch (error) {
     console.error('Error executing query:', error);
     throw error;
   }
 }
 
-// Ruta para obtener datos de MySQL
-app.get('/data-mysql', async (req, res) => {
-  const connection = await connectToMySQL();
+// Ruta para obtener datos de PostgreSQL
+app.post('/api/reservas', async (req, res) => {
+  const { nombre, email, fecha, personas } = req.body;
   try {
-    const [results] = await connection.execute('SELECT * FROM your_table');
-    res.json(results);
+    // Inserta la reserva en la base de datos
+    await executeQuery(
+      'INSERT INTO reservas (nombre, email, fecha, personas) VALUES ($1, $2, $3, $4)',
+      [nombre, email, fecha, personas]
+    );
+    res.status(201).json({ message: 'Reserva creada con éxito' });
   } catch (error) {
-    console.error('Error fetching data from MySQL:', error);
+    console.error('Error creating reservation:', error);
     res.status(500).json({ error: 'Internal Server Error' });
-  } finally {
-    connection.release();
   }
 });
 
-// Resto de tu código...
-const mysql = require('mysql2');
-
-// Datos de conexión (reemplázalos con tus propios datos)
-const pool = mysql.createPool({
-  host:  us-cluster-east-o01.k8s.cleardb.net
-  ,
-  user: bfac6564b0a035,
-  password: admin
-  ,
-  database: heroku 
+// Iniciar el servidor
+app.listen(port, () => {
+  console.log(`Servidor corriendo en http://localhost:${port}`);
 });
-
-// Ejecutar una consulta
-pool.query('SELECT * FROM usuarios', (err, results) => {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log(results); // Procesar los resultados
-  }
-});
-
-// Cerrar la conexión cuando ya no sea necesaria
-pool.end();
