@@ -1,52 +1,49 @@
 const express = require('express');
-const path = require('path');
 const { exec } = require('child_process');
-
+const path = require('path');
 const app = express();
-
-// Configura las variables de entorno manualmente
 const PORT = 3000;
 
+// Middleware para servir archivos estáticos (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Middleware para procesar JSON
 app.use(express.json());
 
-// Ruta para manejar reservas
+// Ruta POST para manejar las reservas
 app.post('/reservar', (req, res) => {
     const { nombre, email, fecha, personas } = req.body;
 
+    // Validar que los campos no estén vacíos
     if (!nombre || !email || !fecha || !personas) {
         return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
-    exec(`php "${path.join(__dirname, 'reservar.php')}" "${nombre}" "${email}" "${fecha}" "${personas}"`, (error, stdout, stderr) => {
+    // Comando para ejecutar el script PHP
+    const cmd = `php ${path.join(__dirname, 'reservar.php')} "${nombre}" "${email}" "${fecha}" "${personas}"`;
+
+    exec(cmd, (error, stdout, stderr) => {
         if (error) {
-            console.error('Error ejecutando PHP:', error);
-            console.error('Error stderr:', stderr);
-            return res.status(500).json({ error: 'Error al procesar la reserva' });
+            console.error(`Error ejecutando PHP: ${stderr}`);
+            return res.status(500).json({ error: 'Error interno del servidor' });
         }
-        if (stderr) {
-            console.error('Error del PHP:', stderr);
-            return res.status(500).json({ error: 'Error al procesar la reserva' });
-        }
+
         try {
             const result = JSON.parse(stdout);
-            if (result.error) {
-                return res.status(400).json({ error: result.error });
-            }
             res.json(result);
-        } catch (e) {
-            console.error('Error al analizar la respuesta de PHP:', e);
-            res.status(500).json({ error: 'Error al procesar la reserva' });
+        } catch (parseError) {
+            console.error(`Error al parsear respuesta: ${parseError}`);
+            res.status(500).json({ error: 'Respuesta inválida del servidor' });
         }
     });
 });
 
-// Configura la carpeta pública para archivos estáticos
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('*', (req, res) => {
+// Ruta para servir el archivo HTML
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Iniciar el servidor
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`Servidor ejecutándose en el puerto ${PORT}`);
 });
