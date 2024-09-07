@@ -19,31 +19,25 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => {
             if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.error || 'Error en la solicitud');
-                });
+                return response.json().then(errorInfo => Promise.reject(errorInfo));
             }
             return response.json();
         })
         .then(data => {
-            if (data.success) {
-                mensajeConfirmacion.innerHTML = `
-                  <h2 style="color: white;">Reserva Realizada</h2>
-                  <p style="color: white;">¡Gracias por tu reserva! Tu solicitud ha sido recibida correctamente.</p>
-                `;
-                reservaForm.reset(); 
-            } else {
-                mensajeConfirmacion.innerHTML = `
-                  <p style="color: red;">${data.error}</p>
-                `;
-            }
+            mensajeConfirmacion.innerHTML = `
+              <h2 style="color: white;">Reserva Realizada</h2>
+              <p style="color: white;">¡Gracias por tu reserva! Tu solicitud ha sido recibida correctamente.</p>
+            `;
+            reservaForm.reset(); 
         })
         .catch(error => {
-            console.error('Error:', error.message);
+            console.error('Error:', error);
             mensajeConfirmacion.innerHTML = `
               <p style="color: red;">Ocurrió un error al realizar la reserva. Por favor, intenta nuevamente.</p>
-              <p style="color: red;">Detalles del error: ${error.message}</p>
             `;
         });
     });
 });
+
+
+

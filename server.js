@@ -1,49 +1,47 @@
-const express = require('express');
-const { exec } = require('child_process');
-const path = require('path');
-const app = express();
-const PORT = 3000;
 
-// Middleware para servir archivos estáticos (HTML, CSS, JS)
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const path = require('path');
+const db = require('./db'); // Importa la conexión a la base de datos
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(bodyParser.json());
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware para procesar JSON
-app.use(express.json());
+// Ruta de prueba para asegurarse de que el servidor está funcionando
+app.get('/', (req, res) => {
+    res.send('Servidor corriendo');
+});
 
-// Ruta POST para manejar las reservas
+// Ruta para manejar reservas
 app.post('/reservar', (req, res) => {
     const { nombre, email, fecha, personas } = req.body;
 
-    // Validar que los campos no estén vacíos
     if (!nombre || !email || !fecha || !personas) {
-        return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+        return res.status(400).json({ error: 'Todos los campos son necesarios' });
     }
 
-    // Comando para ejecutar el script PHP
-    const cmd = `php ${path.join(__dirname, 'reservar.php')} "${nombre}" "${email}" "${fecha}" "${personas}"`;
+    const query = 'INSERT INTO reservas (nombre, email, fecha, personas) VALUES (?, ?, ?, ?)';
+    const values = [nombre, email, fecha, personas];
 
-    exec(cmd, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error ejecutando PHP: ${stderr}`);
-            return res.status(500).json({ error: 'Error interno del servidor' });
+    db.run(query, values, function(err) {
+        if (err) {
+            console.error('Error al insertar reserva:', err);
+            return res.status(500).json({ error: 'Error al realizar la reserva' });
         }
 
-        try {
-            const result = JSON.parse(stdout);
-            res.json(result);
-        } catch (parseError) {
-            console.error(`Error al parsear respuesta: ${parseError}`);
-            res.status(500).json({ error: 'Respuesta inválida del servidor' });
-        }
+        res.json({ message: 'Reserva realizada con éxito', id: this.lastID });
     });
 });
 
-// Ruta para servir el archivo HTML
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Inicia el servidor
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
-// Iniciar el servidor
-app.listen(PORT, () => {
-    console.log(`Servidor ejecutándose en el puerto ${PORT}`);
-});
+
