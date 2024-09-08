@@ -1,18 +1,19 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { Client } = require('pg');
+const connectionString = process.env.DATABASE_URL;
 
-// Ruta a tu archivo de base de datos SQLite
-const dbPath = path.join(__dirname, 'reservas.db');
-
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error al conectar a la base de datos SQLite:', err.message);
-    } else {
-        console.log('Conectado a la base de datos SQLite.');
+const client = new Client({
+    connectionString: connectionString,
+    ssl: {
+        rejectUnauthorized: false
     }
 });
 
-module.exports = db;
+client.connect(err => {
+    if (err) {
+        console.error('Error al conectar a PostgreSQL:', err.stack);
+    } else {
+        console.log('Conectado a PostgreSQL.');
+    }
+});
 
-
-
+module.exports = client;
