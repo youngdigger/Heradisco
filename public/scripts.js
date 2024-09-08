@@ -1,5 +1,7 @@
-document.getElementById('reserva-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
+// scripts.js
+
+document.getElementById('reserva-form').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Prevenir el envío del formulario por defecto
 
     const nombre = document.getElementById('nombre').value;
     const email = document.getElementById('email').value;
@@ -16,14 +18,14 @@ document.getElementById('reserva-form').addEventListener('submit', async (event)
         });
 
         if (response.ok) {
-            const result = await response.json();
-            document.querySelector('.mensaje-confirmacion').innerText = result.message;
+            document.querySelector('.mensaje-confirmacion').innerText = 'Reserva realizada con éxito';
+            document.getElementById('reserva-form').reset(); // Limpiar el formulario
         } else {
             const error = await response.json();
             document.querySelector('.mensaje-confirmacion').innerText = `Error: ${error.error}`;
         }
     } catch (error) {
-        console.error('Error:', error);
-        document.querySelector('.mensaje-confirmacion').innerText = 'Error al enviar la reserva.';
+        console.error('Error al enviar la reserva:', error);
+        document.querySelector('.mensaje-confirmacion').innerText = 'Error en la reserva';
     }
 });
