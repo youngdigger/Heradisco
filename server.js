@@ -1,16 +1,21 @@
 const express = require('express');
+const { Pool } = require('pg');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { Pool } = require('pg'); // Usamos 'pg' para PostgreSQL
+const path = require('path');
 
+// Configuración de Express
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Configuración de CORS
 app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static('public')); // Sirve archivos estáticos desde la carpeta 'public'
 
-// Configura tu base de datos
+// Configuración de bodyParser
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Configuración de la conexión a PostgreSQL
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -18,27 +23,31 @@ const pool = new Pool({
     }
 });
 
-// Ruta para manejar reservas
+// Ruta para manejar las reservas
 app.post('/reservar', async (req, res) => {
     const { nombre, email, fecha, personas } = req.body;
-    
+
     try {
         const result = await pool.query(
             'INSERT INTO reservas (nombre, email, fecha, personas) VALUES ($1, $2, $3, $4) RETURNING *',
             [nombre, email, fecha, personas]
         );
-        res.json(result.rows[0]);
+        res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Error al insertar la reserva:', error);
-        res.status(500).send('Error en el servidor');
+        res.status(500).send('Error al procesar la reserva');
     }
 });
 
-// Ruta para la página principal
+// Servir archivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Servir el archivo principal HTML
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Iniciar el servidor
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);
 });

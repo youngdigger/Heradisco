@@ -1,26 +1,35 @@
-document.getElementById('reserva-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const nombre = document.getElementById('nombre').value;
-    const email = document.getElementById('email').value;
-    const fecha = document.getElementById('fecha').value;
-    const personas = document.getElementById('personas').value;
-    
-    try {
-        const response = await fetch('/reservar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ nombre, email, fecha, personas })
-        });
-        
-        if (!response.ok) throw new Error('Error en la reserva');
-        
-        const data = await response.json();
-        document.querySelector('.mensaje-confirmacion').innerText = `Reserva confirmada: ${data.nombre} - ${data.fecha}`;
-    } catch (error) {
-        console.error('Error:', error);
-        document.querySelector('.mensaje-confirmacion').innerText = 'Error al realizar la reserva';
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('reserva-form');
+    const mensajeConfirmacion = document.querySelector('.mensaje-confirmacion');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const data = {
+            nombre: formData.get('nombre'),
+            email: formData.get('email'),
+            fecha: formData.get('fecha'),
+            personas: formData.get('personas')
+        };
+
+        try {
+            const response = await fetch('/reservar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error('Error en la reserva');
+            }
+
+            const result = await response.json();
+            mensajeConfirmacion.textContent = `Reserva confirmada: ID ${result.id}`;
+        } catch (error) {
+            mensajeConfirmacion.textContent = `Error al realizar la reserva: ${error.message}`;
+        }
+    });
 });
