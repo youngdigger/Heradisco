@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú</title>
+    <title>Menú con Imagen</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
     <header>
-        <img class="Imagen_hera" src="hera.jpg" alt="">
+        <img class="Imagen_hera" src="hera.jpg" alt="Hera">
         <nav>
             <div class="dorado"></div>
             <ul>
@@ -20,39 +21,11 @@
         </nav>
     </header>
 
-    <section id="menu" class="menu-container">
-        <h2>Menú de Cervezas</h2>
-        <ul class="beer-menu">
-            <li class="beer-item">
-                <h3>Cerveza Lager</h3>
-                <p>Una cerveza lager refrescante y ligera.</p>
-                <span class="price">$5.00</span>
-            </li>
-            <li class="beer-item">
-                <h3>Cerveza Ale</h3>
-                <p>Cerveza ale con un sabor más robusto.</p>
-                <span class="price">$6.00</span>
-            </li>
-            <li class="beer-item">
-                <h3>Cerveza IPA</h3>
-                <p>Cerveza IPA con un toque amargo y aromático.</p>
-                <span class="price">$7.00</span>
-            </li>
-            <li class="beer-item">
-                <h3>Cerveza Stout</h3>
-                <p>Cerveza stout con notas de café y chocolate.</p>
-                <span class="price">$6.50</span>
-            </li>
-            <li class="beer-item">
-                <h3>Cerveza de Trigo</h3>
-                <p>Cerveza de trigo suave y afrutada.</p>
-                <span class="price">$5.50</span>
-            </li>
-        </ul>
-    </section>
+    <div class="menu-container">
+        <!-- Imagen del menú -->
+        <img src="hera (a curvas) (1)_page-0001.jpg" alt="Menú" class="menu-image" id="menuImage">
+    </div>
 
-    <footer>
-        <p class="year">&copy; 2024 Discoteca Hera. Todos los derechos reservados.</p>
-    </footer>
+    <script src="script.js"></script>
 </body>
 </html>

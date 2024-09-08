@@ -159,3 +159,24 @@ nav ul li a.active {
 
 
 }
+
+.menu-container {
+    position: relative;
+    /* Agrega un padding para asegurar que el menú no quede pegado a los bordes de la pantalla */
+    padding: 10px;
+    background-color: #000000;
+}
+
+.menu-image {
+    max-width: 90vw; /* Ajusta el tamaño para que la imagen no ocupe todo el ancho de la pantalla */
+    max-height: 80vh; /* Limita la altura máxima para evitar que la imagen sea demasiado grande en pantallas pequeñas */
+    height: auto;
+    cursor: pointer;
+    border-radius: 10px; /* Añade bordes redondeados si lo deseas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añade una sombra sutil para darle un efecto de profundidad */
+    transition: transform 0.3s ease-in-out; /* Transición para un efecto de escala */
+}
+
+.menu-image:hover {
+    transform: scale(1.05); /* Efecto de escala al pasar el ratón, puedes ajustar para móviles si lo deseas */
+}
