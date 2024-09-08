@@ -1,38 +1,50 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { Pool } = require('pg');
 const cors = require('cors');
-const path = require('path');
-require('dotenv').config();
+const { Pool } = require('pg');
+require('dotenv').config(); // Cargar variables de entorno
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración de la base de datos
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
-
+// Configuración de middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Ruta para manejar el formulario de reservas
+// Configurar la conexión a PostgreSQL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+// Ruta para insertar una reserva
 app.post('/reservar', async (req, res) => {
   const { nombre, email, fecha, personas } = req.body;
+
   try {
-    await pool.query('INSERT INTO reservas (nombre, email, fecha, personas) VALUES ($1, $2, $3, $4)', [nombre, email, fecha, personas]);
-    res.status(200).json({ message: 'Reserva realizada con éxito' });
-  } catch (err) {
-    console.error('Error al insertar la reserva:', err);
+    const result = await pool.query(
+      'INSERT INTO reservas (nombre, email, fecha, personas) VALUES ($1, $2, $3, $4) RETURNING *',
+      [nombre, email, fecha, personas]
+    );
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error al insertar la reserva:', error);
     res.status(500).json({ error: 'Error al insertar la reserva' });
   }
 });
 
-// Servir archivos estáticos (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
+// Servir archivos estáticos
+app.use(express.static('public'));
+
+// Ruta de prueba para asegurarse de que la aplicación está en funcionamiento
+app.get('/', (req, res) => {
+  res.send('¡La aplicación está funcionando!');
+});
 
 // Iniciar el servidor
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Servidor escuchando en el puerto ${port}`);
 });

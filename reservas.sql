@@ -1,11 +1,15 @@
 DROP TABLE IF EXISTS reservas;
+(
 
 CREATE TABLE reservas (
-    id SERIAL PRIMARY KEY,
-    nombre TEXT NOT NULL,
-    email TEXT NOT NULL,
-    fecha DATE NOT NULL,
-    hora INTEGER NOT NULL
+  id SERIAL PRIMARY KEY,
+  nombre VARCHAR(100),
+  email VARCHAR(100),
+  fecha DATE,
+  personas INT
+);
+);
+
 );
 
 -- Inserción de datos
