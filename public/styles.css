@@ -1,3 +1,4 @@
+/* Estilos generales */
 body {
     font-family: Arial, sans-serif;
     background-color: black;
@@ -5,7 +6,6 @@ body {
     padding: 0;
     text-align: center;
 }
-
 
 header {
     color: #fff;
@@ -16,18 +16,14 @@ header {
 .Imagen_hera {
     width: 300px;
 }
-.reservass{
 
+.reservass {
     color: white;
     font-family: 'Times New Roman', Times, serif;
-
-
 }
-.formatos{
 
+.formatos {
     color: white;
-
-
 }
 
 nav ul {
@@ -124,41 +120,73 @@ nav ul li a.active {
 .contactos-blancos {
     color: white;
 }
-.contactos{
 
+.contactos {
     color: white;
     font-size: px;
-    
-
 }
 
-.year{
+.year {
     color: white;
-
-
 }
-.email{
 
+.email {
     color: white;
-
 }
-.tel{
 
+.tel {
     color: white;
-
 }
-.mensaje-confirmacion{
 
+.mensaje-confirmacion {
     color: white;
-
 }
-.foot-contact{
 
+.foot-contact {
     font-size: 30px;
     font-family: 'Times New Roman', Times, serif;
-
-
 }
+
+/* Estilos para dispositivos móviles */
+@media (max-width: 768px) {
+    .Imagen_hera {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    nav ul {
+        flex-direction: column;
+    }
+    
+    nav ul li {
+        margin: 10px 0;
+    }
+    
+    .dorado {
+        width: 100%;
+        height: 2px;
+    }
+    
+    #menu {
+        padding: 10px;
+    }
+    
+    .menu-container {
+        padding: 10px;
+        max-width: 100%;
+    }
+    
+    .price {
+        float: none;
+        display: block;
+        text-align: right;
+    }
+    
+    .foot-contact {
+        font-size: 24px;
+    }
+}
+
 
 .menu-container {
     position: relative;
