@@ -1,47 +1,28 @@
-
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
-const path = require('path');
-const db = require('./db'); // Importa la conexión a la base de datos
+const bodyParser = require('body-parser');
+const db = require('./db');  // Asegúrate de que este archivo esté configurado correctamente
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-// Middleware
-app.use(bodyParser.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Ruta de prueba para asegurarse de que el servidor está funcionando
-app.get('/', (req, res) => {
-    res.send('Servidor corriendo');
-});
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Ruta para manejar reservas
 app.post('/reservar', (req, res) => {
-    const { nombre, email, fecha, personas } = req.body;
+    const { nombre, correo, fecha, cantidad } = req.body;
 
-    if (!nombre || !email || !fecha || !personas) {
-        return res.status(400).json({ error: 'Todos los campos son necesarios' });
-    }
-
-    const query = 'INSERT INTO reservas (nombre, email, fecha, personas) VALUES (?, ?, ?, ?)';
-    const values = [nombre, email, fecha, personas];
-
-    db.run(query, values, function(err) {
+    const sql = 'INSERT INTO reservas (nombre, correo, fecha, cantidad) VALUES (?, ?, ?, ?)';
+    db.run(sql, [nombre, correo, fecha, cantidad], function(err) {
         if (err) {
-            console.error('Error al insertar reserva:', err);
-            return res.status(500).json({ error: 'Error al realizar la reserva' });
+            return res.status(500).json({ error: err.message });
         }
-
-        res.json({ message: 'Reserva realizada con éxito', id: this.lastID });
+        res.status(201).json({ id: this.lastID });
     });
 });
 
-// Inicia el servidor
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`Servidor corriendo en el puerto ${port}`);
 });
-
-
