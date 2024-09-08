@@ -1,25 +1,31 @@
-document.querySelector('#reservar-button').addEventListener('click', () => {
-    const reservaData = {
-        nombre: document.querySelector('#nombre').value,
-        correo: document.querySelector('#correo').value,
-        fecha: document.querySelector('#fecha').value,
-        cantidad: document.querySelector('#cantidad').value
-    };
+// scripts.js
 
-    fetch('/reservar', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(reservaData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Reserva exitosa:', data);
-        alert('Reserva realizada con éxito');
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Hubo un error al realizar la reserva');
-    });
+document.getElementById('reserva-form').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Prevenir el envío del formulario por defecto
+
+    const nombre = document.getElementById('nombre').value;
+    const email = document.getElementById('email').value;
+    const fecha = document.getElementById('fecha').value;
+    const personas = document.getElementById('personas').value;
+
+    try {
+        const response = await fetch('/reservar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nombre, email, fecha, personas })
+        });
+
+        if (response.ok) {
+            document.querySelector('.mensaje-confirmacion').innerText = 'Reserva realizada con éxito';
+            document.getElementById('reserva-form').reset(); // Limpiar el formulario
+        } else {
+            const error = await response.json();
+            document.querySelector('.mensaje-confirmacion').innerText = `Error: ${error.error}`;
+        }
+    } catch (error) {
+        console.error('Error al enviar la reserva:', error);
+        document.querySelector('.mensaje-confirmacion').innerText = 'Error en la reserva';
+    }
 });
