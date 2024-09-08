@@ -1,25 +1,26 @@
-document.querySelector('#reservar-button').addEventListener('click', () => {
-    const reservaData = {
-        nombre: document.querySelector('#nombre').value,
-        correo: document.querySelector('#correo').value,
-        fecha: document.querySelector('#fecha').value,
-        cantidad: document.querySelector('#cantidad').value
-    };
-
-    fetch('/reservar', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(reservaData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Reserva exitosa:', data);
-        alert('Reserva realizada con éxito');
-    })
-    .catch(error => {
+document.getElementById('reserva-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const nombre = document.getElementById('nombre').value;
+    const email = document.getElementById('email').value;
+    const fecha = document.getElementById('fecha').value;
+    const personas = document.getElementById('personas').value;
+    
+    try {
+        const response = await fetch('/reservar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nombre, email, fecha, personas })
+        });
+        
+        if (!response.ok) throw new Error('Error en la reserva');
+        
+        const data = await response.json();
+        document.querySelector('.mensaje-confirmacion').innerText = `Reserva confirmada: ${data.nombre} - ${data.fecha}`;
+    } catch (error) {
         console.error('Error:', error);
-        alert('Hubo un error al realizar la reserva');
-    });
+        document.querySelector('.mensaje-confirmacion').innerText = 'Error al realizar la reserva';
+    }
 });
