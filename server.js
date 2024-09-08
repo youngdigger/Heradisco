@@ -36,7 +36,7 @@ app.post('/reservar', async (req, res) => {
   }
 });
 
-// Servir archivos estáticos
+// Servir archivos estáticos desde la carpeta "public"
 app.use(express.static('public'));
 
 // Ruta de prueba para asegurarse de que la aplicación está en funcionamiento
