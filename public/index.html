@@ -37,6 +37,14 @@
             <label class="formatos" for="personas">Número de Personas:</label>
             <input type="number" id="personas" name="personas" required>
 
+            <!-- Nuevo campo para seleccionar el tipo de lugar -->
+            <label class="formatos" for="tipo-lugar">Tipo de Lugar:</label>
+            <select id="tipo-lugar" name="tipo-lugar" required>
+                <option value="estandar">Estándar</option>
+                <option value="vip">VIP</option>
+                <option value="palco">Palco</option>
+            </select>
+
             <button type="submit">Reservar</button>
         </form>
         <div class="mensaje-confirmacion"></div>
