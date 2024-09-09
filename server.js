@@ -22,12 +22,12 @@ const pool = new Pool({
 
 // Ruta para insertar una reserva
 app.post('/reservar', async (req, res) => {
-  const { nombre, email, fecha, personas, tipolugar } = req.body;
+  const { nombre, fecha, personas, tipolugar,telefono } = req.body;
 
   try {
     const result = await pool.query(
       'INSERT INTO reservas (nombre, email, fecha, personas, tipolugar) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [nombre, email, fecha, personas, tipolugar] // Incluye tipolugar en la consulta
+      [nombre, fecha, personas, tipolugar,telefono] // Incluye tipolugar en la consulta
     );
     res.status(200).json(result.rows[0]);
   } catch (error) {
