@@ -27,7 +27,7 @@ app.post('/reservar', async (req, res) => {
   try {
     // Modificar la consulta para incluir tipoLugar
     const result = await pool.query(
-      'INSERT INTO reservas (nombre, email, fecha, personas, tipo_lugar) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      'INSERT INTO reservas (nombre, email, fecha, personas, tipolugar) VALUES ($1, $2, $3, $4, $5) RETURNING *',
       [nombre, email, fecha, personas, tipoLugar] // Pasar tipoLugar como parámetro
     );
     res.status(200).json(result.rows[0]);
