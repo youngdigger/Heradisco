@@ -8,21 +8,21 @@ document.getElementById('reserva-form').addEventListener('submit', async (event)
   const tipolugar = document.getElementById('tipolugar').value;
 
   try {
-      const response = await fetch('/reservar', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ nombre, fecha, personas, tipolugar,telefono }),
-      });
+    const response = await fetch('/reservar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ nombre, telefono, fecha, personas, tipolugar }),
+    });
 
-      if (response.ok) {
-          const data = await response.json();
-          document.querySelector('.mensaje-confirmacion').textContent = `Reserva realizada: ${data.nombre}`;
-      } else {
-          document.querySelector('.mensaje-confirmacion').textContent = 'Error al realizar la reserva.';
-      }
-  } catch (error) {
+    if (response.ok) {
+      const data = await response.json();
+      document.querySelector('.mensaje-confirmacion').textContent = `Reserva realizada: ${data.nombre}`;
+    } else {
       document.querySelector('.mensaje-confirmacion').textContent = 'Error al realizar la reserva.';
+    }
+  } catch (error) {
+    document.querySelector('.mensaje-confirmacion').textContent = 'Error al realizar la reserva.';
   }
 });
