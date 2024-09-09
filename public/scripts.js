@@ -5,7 +5,7 @@ document.getElementById('reserva-form').addEventListener('submit', async (event)
   const email = document.getElementById('email').value;
   const fecha = document.getElementById('fecha').value;
   const personas = document.getElementById('personas').value;
-  const tipoLugar = document.getElementById('tipo-lugar').value; // Nueva variable
+  const tipoLugar = document.getElementById('tipoLugar').value; // Nueva variable
 
   try {
     const response = await fetch('/reservar', {
