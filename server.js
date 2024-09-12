@@ -37,7 +37,7 @@ app.post('/reservar', async (req, res) => {
 
     // Enviar mensaje de WhatsApp con Twilio
     const message = await twilioClient.messages.create({
-      from: 'whatsapp:+573208134717', // Tu número de WhatsApp de Twilio
+      from: 'whatsapp:+573208134717', // Tu número de WhatsApp de Twilio (actualizado)
       to: `whatsapp:+57${telefono}`, // El número de teléfono del cliente (usando WhatsApp)
       body: `Hola ${nombre}, tu reserva para ${personas} personas en el tipo de lugar ${tipolugar} está confirmada para el día ${fecha}. ¡Gracias por reservar!`
     });
