@@ -28,17 +28,25 @@ const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_A
 app.post('/reservar', async (req, res) => {
   const { nombre, fecha, personas, tipolugar, telefono } = req.body;
 
+  // Limpiar el número de teléfono eliminando espacios y caracteres no numéricos
+  const telefonoLimpio = telefono.replace(/\s+/g, '').replace(/\D+/g, ''); // Elimina espacios y caracteres no numéricos
+
+  // Validar que el número de teléfono tenga el formato correcto
+  if (!/^\d{10,15}$/.test(telefonoLimpio)) {
+    return res.status(400).json({ error: 'Número de teléfono inválido' });
+  }
+
   try {
     // Insertar la reserva en la base de datos
     const result = await pool.query(
       'INSERT INTO reservas (nombre, telefono, fecha, personas, tipolugar) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [nombre, telefono, fecha, personas, tipolugar]
+      [nombre, telefonoLimpio, fecha, personas, tipolugar]
     );
 
-    // Enviar mensaje de WhatsApp con Twilio
+    // Enviar mensaje de WhatsApp con Twilio desde tu número personal
     const message = await twilioClient.messages.create({
-      from: 'whatsapp:+573208134717', // Tu número de WhatsApp de Twilio (actualizado)
-      to: `whatsapp:+57${telefono}`, // El número de teléfono del cliente (usando WhatsApp)
+      from: `whatsapp:+${process.env.TWILIO_PHONE_NUMBER}`, // Tu número de WhatsApp de Twilio
+      to: `whatsapp:+57${telefonoLimpio}`, // Asegúrate de que telefonoLimpio es solo el número limpio
       body: `Hola ${nombre}, tu reserva para ${personas} personas en el tipo de lugar ${tipolugar} está confirmada para el día ${fecha}. ¡Gracias por reservar!`
     });
 
