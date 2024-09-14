@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { Pool } = require('pg');
-const twilio = require('twilio'); // Importa Twilio
+const twilio = require('twilio');
 require('dotenv').config(); // Cargar variables de entorno
 
 const app = express();
@@ -24,15 +24,22 @@ const pool = new Pool({
 // Configura Twilio con tus credenciales
 const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
+// Validar el formato del número de teléfono
+function validarTelefono(telefono) {
+  const telefonoLimpio = telefono.replace(/\s+/g, '').replace(/\D+/g, ''); // Elimina espacios y caracteres no numéricos
+  if (!/^\d{10,15}$/.test(telefonoLimpio)) {
+    return null;  // Número inválido
+  }
+  return telefonoLimpio;  // Número válido
+}
+
 // Ruta para insertar una reserva y enviar el mensaje de confirmación
 app.post('/reservar', async (req, res) => {
   const { nombre, fecha, personas, tipolugar, telefono } = req.body;
 
-  // Limpiar el número de teléfono eliminando espacios y caracteres no numéricos
-  const telefonoLimpio = telefono.replace(/\s+/g, '').replace(/\D+/g, ''); // Elimina espacios y caracteres no numéricos
-
-  // Validar que el número de teléfono tenga el formato correcto
-  if (!/^\d{10,15}$/.test(telefonoLimpio)) {
+  // Validar el número de teléfono
+  const telefonoLimpio = validarTelefono(telefono);
+  if (!telefonoLimpio) {
     return res.status(400).json({ error: 'Número de teléfono inválido' });
   }
 
@@ -43,10 +50,10 @@ app.post('/reservar', async (req, res) => {
       [nombre, telefonoLimpio, fecha, personas, tipolugar]
     );
 
-    // Enviar mensaje de WhatsApp con Twilio desde tu número personal
+    // Enviar mensaje de WhatsApp con Twilio desde tu número registrado
     const message = await twilioClient.messages.create({
-      from: `whatsapp:+${process.env.TWILIO_PHONE_NUMBER}`, // Tu número de WhatsApp de Twilio
-      to: `whatsapp:+57${telefonoLimpio}`, // Asegúrate de que telefonoLimpio es solo el número limpio
+      from: `whatsapp:+${process.env.TWILIO_PHONE_NUMBER}`, // Número de WhatsApp de Twilio
+      to: `whatsapp:+57${telefonoLimpio}`, // Número del cliente con prefijo del país
       body: `Hola ${nombre}, tu reserva para ${personas} personas en el tipo de lugar ${tipolugar} está confirmada para el día ${fecha}. ¡Gracias por reservar!`
     });
 
@@ -55,8 +62,17 @@ app.post('/reservar', async (req, res) => {
     res.status(200).json(result.rows[0]);
 
   } catch (error) {
+    // Manejar errores de la base de datos y Twilio
     console.error('Error al insertar la reserva o enviar el mensaje:', error);
-    res.status(500).json({ error: 'Error al insertar la reserva o enviar el mensaje' });
+    
+    // Diferenciar los errores de Twilio y la base de datos para mayor claridad
+    if (error.code) {
+      // Error de PostgreSQL
+      res.status(500).json({ error: 'Error al insertar la reserva en la base de datos' });
+    } else {
+      // Error de Twilio
+      res.status(500).json({ error: 'Error al enviar el mensaje de WhatsApp' });
+    }
   }
 });
 
