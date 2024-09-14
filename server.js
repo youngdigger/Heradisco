@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { Pool } = require('pg');
-const twilio = require('twilio');
 require('dotenv').config(); // Cargar variables de entorno
 
 const app = express();
@@ -21,58 +20,19 @@ const pool = new Pool({
   }
 });
 
-// Configura Twilio con tus credenciales
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-
-// Validar el formato del número de teléfono
-function validarTelefono(telefono) {
-  const telefonoLimpio = telefono.replace(/\s+/g, '').replace(/\D+/g, ''); // Elimina espacios y caracteres no numéricos
-  if (!/^\d{10,15}$/.test(telefonoLimpio)) {
-    return null;  // Número inválido
-  }
-  return telefonoLimpio;  // Número válido
-}
-
-// Ruta para insertar una reserva y enviar el mensaje de confirmación
+// Ruta para insertar una reserva
 app.post('/reservar', async (req, res) => {
   const { nombre, fecha, personas, tipolugar, telefono } = req.body;
 
-  // Validar el número de teléfono
-  const telefonoLimpio = validarTelefono(telefono);
-  if (!telefonoLimpio) {
-    return res.status(400).json({ error: 'Número de teléfono inválido' });
-  }
-
   try {
-    // Insertar la reserva en la base de datos
     const result = await pool.query(
       'INSERT INTO reservas (nombre, telefono, fecha, personas, tipolugar) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [nombre, telefonoLimpio, fecha, personas, tipolugar]
+      [nombre, telefono, fecha, personas, tipolugar] // Corrige el orden y campos
     );
-
-    // Enviar mensaje de WhatsApp con Twilio desde tu número registrado
-    const message = await twilioClient.messages.create({
-      from: `whatsapp:+${process.env.TWILIO_PHONE_NUMBER}`, // Número de WhatsApp de Twilio
-      to: `whatsapp:+57${telefonoLimpio}`, // Número del cliente con prefijo del país
-      body: `Hola ${nombre}, tu reserva para ${personas} personas en el tipo de lugar ${tipolugar} está confirmada para el día ${fecha}. ¡Gracias por reservar!`
-    });
-
-    // Confirmar que la reserva fue registrada y el mensaje enviado
-    console.log('Mensaje enviado:', message.sid);
     res.status(200).json(result.rows[0]);
-
   } catch (error) {
-    // Manejar errores de la base de datos y Twilio
-    console.error('Error al insertar la reserva o enviar el mensaje:', error);
-    
-    // Diferenciar los errores de Twilio y la base de datos para mayor claridad
-    if (error.code) {
-      // Error de PostgreSQL
-      res.status(500).json({ error: 'Error al insertar la reserva en la base de datos' });
-    } else {
-      // Error de Twilio
-      res.status(500).json({ error: 'Error al enviar el mensaje de WhatsApp' });
-    }
+    console.error('Error al insertar la reserva:', error);
+    res.status(500).json({ error: 'Error al insertar la reserva' });
   }
 });
 
