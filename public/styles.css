@@ -208,3 +208,20 @@ nav ul li a.active {
 .menu-image:hover {
     transform: scale(1.05); /* Efecto de escala al pasar el ratón, puedes ajustar para móviles si lo deseas */
 }
+
+.boton{
+
+  border-radius: 90px;
+
+
+
+}
+.boton2:hover{
+
+    background-color: rgb(72, 17, 17);
+
+
+    
+
+
+}

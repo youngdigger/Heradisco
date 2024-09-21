@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { Pool } = require('pg');
-const venom = require('venom-bot'); // Agrega Venom
+const twilio = require('twilio');
 require('dotenv').config(); // Cargar variables de entorno
 
 const app = express();
@@ -17,68 +17,58 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false // Esto es necesario para algunas configuraciones de Heroku
   }
 });
 
-// Iniciar Venom para enviar mensajes de WhatsApp
-let venomClient;
-venom.create({
-  session: 'sessionName', // Nombre de la sesión para guardar el estado de la sesión
-  headless: true, // Cambia a false si necesitas ver el navegador
-  useChrome: true, // Usa Chrome en lugar de Chromium (si es necesario)
-  debug: false, // Cambia a true si necesitas más información de depuración
-}).then(client => {
-  venomClient = client;
-  console.log('Venom está listo para enviar mensajes de WhatsApp');
-}).catch(err => {
-  console.error('Error iniciando Venom:', err);
-});
+// Configurar Twilio con tus credenciales
+const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-// Ruta para insertar una reserva y enviar el mensaje de WhatsApp
+// Validar el formato del número de teléfono
+function validarTelefono(telefono) {
+  const telefonoLimpio = telefono.replace(/\s+/g, '').replace(/\D+/g, ''); // Elimina espacios y caracteres no numéricos
+  return /^\d{10,15}$/.test(telefonoLimpio) ? telefonoLimpio : null; // Devuelve el número limpio o null si es inválido
+}
+
+// Ruta para insertar una reserva y enviar el mensaje de confirmación
 app.post('/reservar', async (req, res) => {
   const { nombre, fecha, personas, tipolugar, telefono } = req.body;
+
+  // Validar el número de teléfono
+  const telefonoLimpio = validarTelefono(telefono);
+  if (!telefonoLimpio) {
+    return res.status(400).json({ error: 'Número de teléfono inválido' });
+  }
 
   try {
     // Insertar la reserva en la base de datos
     const result = await pool.query(
       'INSERT INTO reservas (nombre, telefono, fecha, personas, tipolugar) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [nombre, telefono, fecha, personas, tipolugar]
+      [nombre, telefonoLimpio, fecha, personas, tipolugar]
     );
 
-    // Obtener el registro insertado
-    const reserva = result.rows[0];
+    // Enviar mensaje de WhatsApp con Twilio desde tu número registrado
+    const message = await twilioClient.messages.create({
+      from: `whatsapp:+${process.env.TWILIO_PHONE_NUMBER}`, // Número de WhatsApp de Twilio
+      to: `whatsapp:+57${telefonoLimpio}`, // Número del cliente con prefijo del país
+      body: `Hola ${nombre}, tu reserva para ${personas} personas en el tipo de lugar ${tipolugar} está confirmada para el día ${fecha}. ¡Gracias por reservar!`
+    });
 
-    // Enviar el mensaje de WhatsApp usando Venom
-    const mensaje = `¡Hola ${nombre}!
-      Tu reserva ha sido confirmada:
-      - Fecha: ${fecha}
-      - Número de personas: ${personas}
-      - Tipo de lugar: ${tipolugar}
-      
-     Debes consignar 50k para apartar tu reserva, consígnalos a este número de Nequi: +57 304 3690811. ¡Te esperamos en Hera!`;
-
-    // Número de teléfono en formato internacional
-    const numeroWhatsapp = `57${telefono}@c.us`; // Asegúrate de que el número esté en formato internacional (sin espacios)
-
-    if (venomClient) {
-      venomClient.sendText(numeroWhatsapp, mensaje)
-        .then(() => {
-          console.log('Mensaje de WhatsApp enviado con éxito');
-        })
-        .catch(error => {
-          console.error('Error al enviar el mensaje de WhatsApp:', error);
-        });
-    } else {
-      console.error('VenomClient no está disponible');
-    }
-
-    // Responder al cliente con la reserva confirmada
-    res.status(200).json(reserva);
+    // Confirmar que la reserva fue registrada y el mensaje enviado
+    console.log('Mensaje enviado:', message.sid);
+    res.status(200).json(result.rows[0]);
 
   } catch (error) {
-    console.error('Error al insertar la reserva:', error);
-    res.status(500).json({ error: 'Error al insertar la reserva' });
+    // Manejar errores de la base de datos y Twilio
+    console.error('Error al insertar la reserva o enviar el mensaje:', error);
+    
+    if (error.code) {
+      // Error de PostgreSQL
+      res.status(500).json({ error: 'Error al insertar la reserva en la base de datos' });
+    } else {
+      // Error de Twilio
+      res.status(500).json({ error: 'Error al enviar el mensaje de WhatsApp' });
+    }
   }
 });
 
